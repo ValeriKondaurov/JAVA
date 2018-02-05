@@ -56,7 +56,8 @@ abstract class Fruit {
         float f;
         do f = r.nextFloat();
         while (s+f>e);
-        return Math.round((s+f)*100);
+
+        return  (float) (Math.ceil((s+f)*100)/100);
     }
 
     public float getWeight() {
@@ -116,11 +117,12 @@ class Box <T extends Fruit> {
 
     public void putFruit (Box <T> box) {
         float f;
-        while (!(box.getWeight()==0)) {
-            f = box.getFruit();
-            boxfruit.add(f);
+        while (Float.compare(box.getWeight(),0.000f)==1) {
+           f = box.getFruit();
+          boxfruit.add(f);
             boxweight+=f;
         }
+        ;
     }
 }
 
