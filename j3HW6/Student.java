@@ -43,17 +43,19 @@ class Student  {
     }
 
     Student(String[] args) {
-
-        if (args.length == 0) {
-            System.out.println("Work with DB.\n" +
-                    "use command [-create,-init,-print,-getprice, -setprice, -delete -exit]");
-            Scanner sc = new Scanner(System.in);
-            do {
+        List <String> arg = new ArrayList<>(Arrays.asList(args));
+        boolean exit = false;
+        do {
+            if (arg.size() == 0) {
+                System.out.println("Work with DB.\n" +
+                        "use command [-create,-init,-print,-getprice, -setprice, -delete -exit]");
+                Scanner sc = new Scanner(System.in);
                 System.out.print("> ");
-                String line = sc.nextLine();
-                args = line.split(" ");
-
-                switch (args[0]) {
+                args = sc.nextLine().split(" ");
+                arg.clear();
+                Collections.addAll(arg, args);
+            }
+            switch (arg.get(0)) {
                     case "-create":
                         openDBFile(SQLITE_DB).
                                 createTable(SQL_CREATE_TABLE);
@@ -74,23 +76,26 @@ class Student  {
                         break;
                     case "-setprice":
                         openDBFile(SQLITE_DB)
-                                .update(args[1], args[2]);
+                                .update(arg.get(1), arg.get(1));
                         System.out.println(RECORD_UPDATED);
                         break;
                     case "-list":
                         openDBFile(SQLITE_DB)
-                                .list(args[1], args[2]);
+                                .list(arg.get(1), arg.get(1));
                         break;
                     case "-delete":
                         openDBFile(SQLITE_DB)
-                                .delete(args[1]);
+                                .delete(arg.get(1));
                         System.out.println(RECORD_DELETED);
                         break;
+                    case "-exit":
+                        exit = true;
+                         break;
                     default:
                         System.out.println(UNKNOWN_COMMAND);
                 }
-            } while (!(args[0] == "-exit"));
-        }
+               arg.clear();
+        } while (!(exit));
     }
 
     private Student openDBFile(String dbName) { // open/create database
@@ -115,14 +120,15 @@ class Student  {
     private void init() { // init record
         try {
             stmt = connect.createStatement();
+            Random r = new Random();
             stmt.executeUpdate("DELETE FROM " + NAME_TABLE);
             ps = connect.prepareStatement("INSERT INTO " + NAME_TABLE +
                     "(" + ID_COL +","+ STUDENT_COL + "," + SCORE_COL + ")" +
                     "VALUES (?, ?, ?);");
             for (int i=1; i<=10; i++) {
                 ps.setInt(1,i);
-                ps.setInt(3,i*10);
-                ps.setString(2,"item"+i);
+                ps.setInt(3,rnd(5));
+                ps.setString(2,"Student"+i);
                 ps.addBatch();
             }
             ps.executeBatch();
@@ -130,6 +136,10 @@ class Student  {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public static int rnd(int max)
+    {
+        return (int) (Math.random() * ++max);
     }
 
     private void getprice(String item) { // getprice record
@@ -174,7 +184,7 @@ class Student  {
     }
     private void list (String coststart, String costend) { // print table
         try {
-            System.out.println("ID\tTITLE\tCOST");
+            System.out.println("ID\tSTUDENT\tSCORE");
             stmt = connect.createStatement();
             rs = stmt.executeQuery("SELECT * FROM " + NAME_TABLE +
                     " WHERE cost >= " + coststart +" AND cost <= " + costend +" ;");
@@ -191,7 +201,7 @@ class Student  {
 
     private void print() { // print table
         try {
-            System.out.println("ID\tTITLE\tCOST");
+            System.out.println("ID\tSTUDENT\tSCORE");
             stmt = connect.createStatement();
             rs = stmt.executeQuery(SQL_SELECT);
             while (rs.next())
