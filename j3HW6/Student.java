@@ -27,7 +27,8 @@ class Student  {
     final String RECORD_ADDED = "Record added.";
     final String RECORD_DELETED = "Record deleted.";
     final String RECORD_UPDATED = "Record updated.";
-    final String UNKNOWN_COMMAND = "Unknown command, use [-create,-init,-print,-getprice, -setprice, -delete -exit] only.";
+    final String UNKNOWN_COMMAND = "Unknown command, use [-create,-init,-print,-getscore, " +
+                                                    "-setscore,-listscore, -delete -exit] only.";
     final String ID_COL = "id";
     final String STUDENT_COL = "student";
     final String SCORE_COL = "score";
@@ -45,10 +46,10 @@ class Student  {
     Student(String[] args) {
         List <String> arg = new ArrayList<>(Arrays.asList(args));
         boolean exit = false;
-        do {
+  //      do {
             if (arg.size() == 0) {
                 System.out.println("Work with DB.\n" +
-                        "use command [-create,-init,-print,-getprice, -setprice, -delete -exit]");
+                        "use command [-create,-init,-print,-getscore, -setscore, -list, -delete -exit]");
                 Scanner sc = new Scanner(System.in);
                 System.out.print("> ");
                 args = sc.nextLine().split(" ");
@@ -66,22 +67,27 @@ class Student  {
                                 .init();
                         System.out.println(RECORD_ADDED);
                         break;
+                    case "-add":
+                        openDBFile(SQLITE_DB)
+                                .add(arg.get(1), arg.get(2));
+                        System.out.println(RECORD_ADDED);
+                        break;
                     case "-print":
                         openDBFile(SQLITE_DB).
                                 print();
                         break;
-                    case "-getprice":
+                    case "-getscore":
                         openDBFile(SQLITE_DB)
                                 .getprice(args[1]);
                         break;
-                    case "-setprice":
+                    case "-setscore":
                         openDBFile(SQLITE_DB)
-                                .update(arg.get(1), arg.get(1));
+                                .update(arg.get(1), arg.get(2));
                         System.out.println(RECORD_UPDATED);
                         break;
                     case "-list":
                         openDBFile(SQLITE_DB)
-                                .list(arg.get(1), arg.get(1));
+                                .list(arg.get(1), arg.get(2));
                         break;
                     case "-delete":
                         openDBFile(SQLITE_DB)
@@ -95,13 +101,14 @@ class Student  {
                         System.out.println(UNKNOWN_COMMAND);
                 }
                arg.clear();
-        } while (!(exit));
+   //     } while (!(exit));
     }
 
     private Student openDBFile(String dbName) { // open/create database
         try {
             Class.forName(DRIVER_NAME);
             connect = DriverManager.getConnection(dbName);
+            stmt = connect.createStatement();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -110,7 +117,6 @@ class Student  {
 
     private void createTable(String sqlCreateTable) { // create table
         try {
-            stmt = connect.createStatement();
             stmt.executeUpdate(sqlCreateTable);
         } catch (Exception e) { 
             e.printStackTrace();
@@ -119,7 +125,6 @@ class Student  {
 
     private void init() { // init record
         try {
-            stmt = connect.createStatement();
             Random r = new Random();
             stmt.executeUpdate("DELETE FROM " + NAME_TABLE);
             ps = connect.prepareStatement("INSERT INTO " + NAME_TABLE +
@@ -127,7 +132,7 @@ class Student  {
                     "VALUES (?, ?, ?);");
             for (int i=1; i<=10; i++) {
                 ps.setInt(1,i);
-                ps.setInt(3,rnd(5));
+                ps.setInt(3,rand(5));
                 ps.setString(2,"Student"+i);
                 ps.addBatch();
             }
@@ -137,18 +142,28 @@ class Student  {
             e.printStackTrace();
         }
     }
-    public static int rnd(int max)
+    private void add (String student, String score) { // add record
+        try {
+            stmt.executeUpdate("INSERT INTO " + NAME_TABLE +
+                    "("+ STUDENT_COL + "," + SCORE_COL + ")" +
+                    "VALUES ('" + student+ "','" + score + "');");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int rand(int max)
     {
         return (int) (Math.random() * ++max);
     }
 
-    private void getprice(String item) { // getprice record
+    private void getprice(String student) { // getprice record
         try {
-            stmt = connect.createStatement();
             rs = stmt.executeQuery("SELECT * FROM " + NAME_TABLE +
-                                        " WHERE " + STUDENT_COL + " = '" + item  + "';");
+                                        " WHERE " + STUDENT_COL + " = '" + student  + "';");
             if  (rs.next()) {
-                System.out.println("TITLE\tCOST");
+                System.out.println("STUDENT\tSCORE");
                 do {
                     System.out.println(
                             rs.getString(ID_COL) + ".\t" +
@@ -162,32 +177,32 @@ class Student  {
 
     }
 
-    private void update(String item, String cost) { // update cost by title
+    private void update(String student, String score) { // update cost by title
         try {
             stmt = connect.createStatement();
             stmt.executeUpdate("UPDATE " + NAME_TABLE +
-                " set cost='" + cost +
-                "' where title='" + item+ "';");
+                " set score='" + score +
+                "' where student='" + student+ "';");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void delete(String item) { // delete record by title
+    private void delete(String student) { // delete record by title
         try {
             stmt = connect.createStatement();
             stmt.executeUpdate("DELETE from " + NAME_TABLE +
-                " where title='" + item + "';");
+                " where student='" + student + "';");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    private void list (String coststart, String costend) { // print table
+    private void list (String scorestart, String scoreend) { // print table
         try {
             System.out.println("ID\tSTUDENT\tSCORE");
             stmt = connect.createStatement();
             rs = stmt.executeQuery("SELECT * FROM " + NAME_TABLE +
-                    " WHERE cost >= " + coststart +" AND cost <= " + costend +" ;");
+                    " WHERE score >= " + scorestart +" AND score <= " + scoreend +" ;");
             while (rs.next())
                 System.out.println(
                         rs.getString(ID_COL) + ".\t" +
