@@ -3,7 +3,7 @@
  * 2. CRUD app
  *
  * @author Valeriy Kondaurov
- * @version dated Feb 09, 2018
+ * @version dated Feb 20, 2018
  * @link https://github.com/ValeriKondaurov/Java3
  */
 import com.sun.deploy.util.ArrayUtil;

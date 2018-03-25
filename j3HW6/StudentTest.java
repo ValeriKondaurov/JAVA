@@ -1,3 +1,11 @@
+/**
+ JUnit test for check class Student
+
+ * @author Valeriy Kondaurov
+ * @version dated MAR 22, 2018
+ * @link https://github.com/ValeriKondaurov/Java3
+ */
+
 import org.junit.*;
 
 public class StudentTest {
