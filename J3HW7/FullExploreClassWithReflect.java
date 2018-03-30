@@ -17,6 +17,8 @@
 иначе необходимо бросить RuntimeException при запуске «тестирования».
  */
 
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -25,29 +27,25 @@ import java.lang.reflect.Modifier;
 public class FullExploreClassWithReflect {
 
     public static void main(String[] args) {
-        explore ("Cat");
+        explore ("ru.AnimalExplore.Cat");
     }
 
     static void explore(String nameclass) {
         try {
             Class refclass = Class.forName(nameclass);
+            System.out.println("-----Information about Class-----");
             System.out.println("Full name: " + refclass.getName());
             System.out.println("Short name: " + refclass.getSimpleName());
-            int modifiers = refclass.getModifiers();
-            System.out.println("Modifiers = " + modifiers);
+            if (!(refclass.getPackage() == null))
+                System.out.println("Include package" + refclass.getPackage());
 
-            // get modifiers of class
-            if (Modifier.isPublic(modifiers))
-                System.out.println(refclass.getSimpleName() + " - public");
-            if (Modifier.isAbstract(modifiers))
-                System.out.println(refclass.getSimpleName() + " - abstract");
-            if (Modifier.isFinal(modifiers))
-                System.out.println(refclass.getSimpleName() + " - final");
+            System.out.println("Modifiers class is " + modifier(refclass.getModifiers(),false));
 
             // get public fields of class
+            System.out.println("-----Fields-----");
             for (Field field : refclass.getDeclaredFields())
-                System.out.println(
-                        "Type name: " + field.getType().getName() + " " + field.getName());
+                System.out.println(modifier(field.getModifiers(), true)   + " | "
+                                + field.getName()+ ":" + field.getType().getSimpleName());
 
             // get public constructors
             System.out.println("--------public constructors");
@@ -55,8 +53,10 @@ public class FullExploreClassWithReflect {
                 System.out.println(constructor);
 
             // get public methods
-            for (Method method : refclass.getMethods())
+            for (Method method : refclass.getMethods()) {
                 System.out.println(method);
+
+            }
             System.out.println("---------ALLL methods");
             for (Method method : refclass.getDeclaredMethods())
                 System.out.println(method);
@@ -68,4 +68,26 @@ public class FullExploreClassWithReflect {
 
         }
     }
+
+    private static String modifier(int m, boolean type) {
+        switch (m) {
+            case Modifier.PUBLIC:
+                return (type ? "+" : "(public)");
+            case Modifier.PRIVATE:
+                return (type ? "-" : "(private)");
+            case Modifier.PROTECTED:
+                return (type ? "#" : "(protected)");
+            case Modifier.FINAL:
+                return "(final)";
+            case Modifier.ABSTRACT:
+                return "(abstract)";
+            case Modifier.STATIC:
+                return "(static)";
+            default:
+                return "(" + Modifier.toString(m) + ")";
+
+        }
+    }
 }
+
+
