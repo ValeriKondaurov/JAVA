@@ -19,6 +19,7 @@
 
 import com.sun.org.apache.xpath.internal.SourceTree;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -33,31 +34,35 @@ public class FullExploreClassWithReflect {
     static void explore(String nameclass) {
         try {
             Class refclass = Class.forName(nameclass);
-            System.out.println("-----Information about Class-----");
+            System.out.println("-----<Information about Class>-----");
             System.out.println("Full name: " + refclass.getName());
             System.out.println("Short name: " + refclass.getSimpleName());
             if (!(refclass.getPackage() == null))
-                System.out.println("Include package" + refclass.getPackage());
-
+                System.out.println("Include package - " + refclass.getPackage());
+            System.out.println("Her Super class - " + refclass.getSuperclass().getSimpleName());
             System.out.println("Modifiers class is " + modifier(refclass.getModifiers(),false));
 
-            // get public fields of class
-            System.out.println("-----Fields-----");
+            // get all fields of class
+            System.out.println("-----<Fields>-----");
             for (Field field : refclass.getDeclaredFields())
                 System.out.println(modifier(field.getModifiers(), true)   + " | "
                                 + field.getName()+ ":" + field.getType().getSimpleName());
 
             // get public constructors
-            System.out.println("--------public constructors");
-            for (Constructor constructor : refclass.getConstructors())
-                System.out.println(constructor);
+            System.out.println("--------<Constructors>-------");
+            for (Constructor constructor : refclass.getDeclaredConstructors()) {
+                System.out.print(modifier(constructor.getModifiers(), true) + " | " + constructor.getName() + "(");
+                for (Class c:constructor.getParameterTypes())
+                    System.out.print(" " + c.getSimpleName() + ",");
+                System.out.println(")");
+            }
 
             // get public methods
             for (Method method : refclass.getMethods()) {
                 System.out.println(method);
 
             }
-            System.out.println("---------ALLL methods");
+            System.out.println("---------ALL methods");
             for (Method method : refclass.getDeclaredMethods())
                 System.out.println(method);
 
