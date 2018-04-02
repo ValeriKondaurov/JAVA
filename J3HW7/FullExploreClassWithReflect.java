@@ -18,12 +18,14 @@
  */
 
 import com.sun.org.apache.xpath.internal.SourceTree;
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.Annotated;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.InterfaceAddress;
 
 public class FullExploreClassWithReflect {
 
@@ -43,7 +45,7 @@ public class FullExploreClassWithReflect {
             System.out.println("Modifiers class is " + modifier(refclass.getModifiers(),false));
 
             // get all fields of class
-            System.out.println("-----<Fields>-----");
+            System.out.println("--------<Fields>--------");
             for (Field field : refclass.getDeclaredFields())
                 System.out.println(modifier(field.getModifiers(), true)   + " | "
                                 + field.getName()+ ":" + field.getType().getSimpleName());
@@ -57,14 +59,43 @@ public class FullExploreClassWithReflect {
                 System.out.println(")");
             }
 
-            // get public methods
-            for (Method method : refclass.getMethods()) {
-                System.out.println(method);
-
+            // get all methods
+            System.out.println("--------<All Methods>-------");
+            String str = null;
+            for (Method method : refclass.getDeclaredMethods()) {
+                str ="";
+                str = modifier(method.getModifiers(), true) + " | " + method.getName() + "(";
+                if (method.getParameterCount()>0) {
+                    str = str + "Value :";
+                    for (Class c : method.getParameterTypes())
+                        str = str + " " + c.getSimpleName() + ",";
+                    str = str +"). ";
+                } else {
+                    str = str + ").";
+                }
+                for (int i = 0; i<(40-str.length())/4;i++) str = str + "\t";
+                str = str + (method.getReturnType().getSimpleName() == "void"
+                                ?"Not Return Value"
+                                : "Return Value type - "+ method.getReturnType().getSimpleName());
+                System.out.println(str);
             }
-            System.out.println("---------ALL methods");
-            for (Method method : refclass.getDeclaredMethods())
-                System.out.println(method);
+            // get all Interfaces
+            System.out.println("--------<Interfaces>-------");
+            for (Class interfaces: refclass.getInterfaces()) {
+                System.out.print(modifier(interfaces.getModifiers(), true) + " "+ interfaces.getSimpleName() + ". ");
+                str ="";
+                for (Method method :interfaces.getDeclaredMethods()) {
+                    str ="Declared method: " + modifier(method.getModifiers(), true) + " | "
+                            + method.getName() + " (";
+                    if (method.getParameterCount() > 0) {
+                        str = str + "Value :";
+                        for (Class c : method.getParameterTypes())
+                            str = str + " " + c.getSimpleName() + ",";
+                    }
+                    str = str + ").";
+                }
+                System.out.println(str);
+            }
 
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
