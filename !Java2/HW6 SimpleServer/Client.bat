@@ -1,0 +1,2 @@
+javac SimpleClient.java
+java SimpleClient

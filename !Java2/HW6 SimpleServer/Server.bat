@@ -1,0 +1,2 @@
+javac SimpleServer.java
+java SimpleServer
